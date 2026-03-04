@@ -359,7 +359,7 @@ export default function BehavioralInsights() {
                                     ))}
                                     {scores?.lossAversionRatio != null && (
                                         <InsightRow
-                                            text={`Loss Aversion Ratio: ${scores.lossAversionRatio.toFixed(2)}× — ${scores.lossAversionRatio > 1.5 ? 'You hold losing positions significantly longer than winners, a classic loss-aversion pattern.' : 'Your holding behaviour is relatively balanced between winners and losers.'}`}
+                                            text={`Loss Aversion Ratio: ${scores.lossAversionRatio.toFixed(2)}× - ${scores.lossAversionRatio > 1.5 ? 'You hold losing positions significantly longer than winners, a classic loss-aversion pattern.' : 'Your holding behaviour is relatively balanced between winners and losers.'}`}
                                             type={scores.lossAversionRatio > 1.5 ? 'warn' : 'good'}
                                         />
                                     )}
@@ -500,7 +500,7 @@ export default function BehavioralInsights() {
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-8 gap-2" style={{ color: 'var(--color-text-muted)' }}>
                                         <CheckCircle size={32} style={{ opacity: 0.5, color: 'var(--color-success)' }} />
-                                        <p className="text-sm">No spending anomalies detected — your patterns look consistent!</p>
+                                        <p className="text-sm">No spending anomalies detected - your patterns look consistent!</p>
                                     </div>
                                 )}
                         </GlassCard>

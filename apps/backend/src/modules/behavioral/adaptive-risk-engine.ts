@@ -59,7 +59,7 @@ export async function computeAdaptiveRisk(userId: number): Promise<AdaptiveRiskR
     if (recentReturns.length >= 5) {
         const rets = recentReturns.map(r => n(r.dailyReturn));
         const mean = rets.reduce((a, b) => a + b, 0) / rets.length;
-        const variance = rets.reduce((s, r) => s + (r - mean) ** 2, 0) / rets.length;
+        const variance = rets.reduce((s, r) => s + (r - mean) ** 2, 0) / (rets.length-1);
         recentVolatility = Math.sqrt(variance * 252);
     }
     if (ltReturns.length >= 20) {
@@ -126,7 +126,7 @@ export async function computeAdaptiveRisk(userId: number): Promise<AdaptiveRiskR
     }
 
     if (adjustmentReasons.length === 0) {
-        adjustmentReasons.push('No significant adjustment needed — your behavioral profile aligns with your current risk tolerance.');
+        adjustmentReasons.push('No significant adjustment needed; your behavioral profile aligns with your current risk tolerance.');
     }
 
     suggestedTolerance = parseFloat(clamp(suggestedTolerance, 1, 10).toFixed(1));

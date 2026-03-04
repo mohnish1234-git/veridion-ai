@@ -1,15 +1,25 @@
-import { useEffect } from 'react';
-import { useBehavioralStore } from '../state/behavioral.store';
-import { useAuthStore } from '../state/auth.store';
+import { useEffect } from "react";
+import { useBehavioralStore } from "../state/behavioral.store";
 
 export function useBehavioral() {
-    const store = useBehavioralStore();
-    const userId = useAuthStore((s) => s.user?.id);
+    const {
+        scores,
+        spending,
+        adaptiveRisk,
+        history,
+        isLoading,
+        fetchAll,
+    } = useBehavioralStore();
 
     useEffect(() => {
-        if (!userId) return;
-        store.fetchAll();
-    }, [userId]);
+        fetchAll();
+    }, [fetchAll]);
 
-    return store;
+    return {
+        scores,
+        spending,
+        adaptiveRisk,
+        history,
+        isLoading,
+    };
 }

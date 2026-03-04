@@ -68,7 +68,7 @@ export async function detectBiases(userId: number): Promise<BiasDetectionResult>
             panicSellScore = clamp(Math.round(panicRatio * 100));
         } else if (portfolioReturns.length >= 20) {
             // Less sell actions = less panic selling
-            panicSellScore = clamp(30 + Math.round(Math.random() * 10));
+            panicSellScore = 20 + sellActions.length * 2
         }
     }
 
@@ -94,7 +94,7 @@ export async function detectBiases(userId: number): Promise<BiasDetectionResult>
 
         // High recency bias: portfolio skews toward recent winners much more than LT performance
         const bias = weightedRecentRet > weightedLtRet ? (weightedRecentRet - weightedLtRet) : 0;
-        recencyBiasScore = clamp(Math.round(bias * 300 + 30)); // scale
+        recencyBiasScore = clamp(50 + bias * 200); // scale
     }
 
     // ── 4. Risk Chasing Score (0-100) ─────────────────────────────────────────
@@ -178,28 +178,28 @@ export async function detectBiases(userId: number): Promise<BiasDetectionResult>
     const insights: string[] = [];
 
     if (panicSellScore < 30)
-        insights.push('Your panic sell score is low — you handle downturns with composure.');
+        insights.push('Your panic sell score is low; you handle downturns with composure.');
     else if (panicSellScore < 60)
-        insights.push('You show moderate panic sell tendencies — consider setting stop-loss rules to stay systematic.');
+        insights.push('You show moderate panic sell tendencies; consider setting stop-loss rules to stay systematic.');
     else
-        insights.push('High panic sell score detected — you may be making emotional sell decisions during dips.');
+        insights.push('High panic sell score detected; you may be making emotional sell decisions during dips.');
 
     if (recencyBiasScore < 35)
-        insights.push('Minimal recency bias — your allocation decisions reflect long-term thinking.');
+        insights.push('Minimal recency bias; your allocation decisions reflect long-term thinking.');
     else if (recencyBiasScore < 65)
         insights.push('You show moderate recency bias, tending to overweight recent winners in your portfolio.');
     else
-        insights.push('Strong recency bias detected — your holdings are heavily skewed toward recently hot assets.');
+        insights.push('Strong recency bias detected; your holdings are heavily skewed toward recently hot assets.');
 
     if (liquidityStressScore < 30 && burnRate > 0)
         insights.push(`Your liquidity buffer is solid, covering ${Math.round((portfolioValue || 0) / (burnRate || 1))} months of expenses.`);
     else if (liquidityStressScore < 60)
-        insights.push('Your liquidity coverage is moderate — consider building a larger emergency buffer.');
+        insights.push('Your liquidity coverage is moderate; consider building a larger emergency buffer.');
     else
-        insights.push('Low liquidity buffer detected — your portfolio may not cover unexpected expenses for very long.');
+        insights.push('Low liquidity buffer detected; your portfolio may not cover unexpected expenses for very long.');
 
     if (riskChasingScore > 60)
-        insights.push('You gravitate toward high-volatility assets — ensure this aligns with your stated risk profile.');
+        insights.push('You gravitate toward high-volatility assets; ensure this aligns with your stated risk profile.');
 
     // ── 9. Persist BehavioralScore ────────────────────────────────────────────
     const featureSnapshot: Record<string, number> = {

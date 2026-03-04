@@ -1,28 +1,43 @@
-import yahooFinance from 'yahoo-finance2';
+import YahooFinance from "yahoo-finance2";
+import { prisma } from "../../infrastructure/prisma/client";
 
-/**
- * Fetches historical daily prices for a given ticker from Yahoo Finance.
- * Range: 2015-01-01 to today.
- * @param ticker Asset ticker (e.g., 'AAPL', 'BTC-USD')
- * @returns Array of price records
- */
+const yahooFinance = new YahooFinance();
+
+function normalizeTicker(ticker: string) {
+  if (ticker === "BTC") return "BTC-USD";
+  if (ticker === "ETH") return "ETH-USD";
+  return ticker;
+}
+
 export async function fetchHistoricalPrices(ticker: string) {
-    const queryOptions = {
-        period1: '2015-01-01',
-        interval: '1d' as const,
-    };
 
-    try {
-        const results = await yahooFinance.historical(ticker, queryOptions);
-
-        return (results as any[])
-            .filter((quote: any) => quote.close !== null && quote.close !== undefined)
-            .map((quote: any) => ({
-                date: new Date(quote.date),
-                close: quote.close,
-            }));
-    } catch (error) {
-        console.error(`Error fetching prices for ${ticker}:`, error);
-        return [];
+  const asset = await prisma.asset.findUnique({
+    where: { ticker },
+    include: {
+      prices: {
+        orderBy: { priceDate: "desc" },
+        take: 1
+      }
     }
+  });
+
+  let period1 = "2015-01-01";
+
+  if (asset?.prices?.length) {
+    const last = asset.prices[0].priceDate;
+    period1 = last.toISOString().split("T")[0];
+  }
+
+  const results = await yahooFinance.historical(normalizeTicker(ticker), {
+    period1,
+    period2: new Date(),
+    interval: "1d"
+  });
+
+  return (results as any[])
+    .filter((q) => q.close !== null && q.close !== undefined)
+    .map((q) => ({
+      date: new Date(q.date),
+      close: q.close
+    }));
 }

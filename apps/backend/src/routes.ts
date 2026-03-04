@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authController } from "./modules/auth/auth.controller";
 import { portfolioController } from "./modules/portfolio/portfolio.controller";
 import { behavioralController } from "./modules/behavioral/behavioral.controller";
+import { marketDataController } from "./modules/market-data/market-data.controller";
 import { userController } from "./modules/user/user.controller";
 import { monteCarloController } from "./modules/montecarlo/montecarlo.controller";
 import { goalsController } from "./modules/goals/goals.controller";
@@ -19,6 +20,7 @@ router.use(authController);
 // Protected modules
 router.use("/portfolio", portfolioController);
 router.use("/behavioral", behavioralController);
+router.use("/market", marketDataController);
 router.use(userController);
 router.use("/montecarlo", monteCarloController);
 router.use("/goals", goalsController);

@@ -14,6 +14,7 @@ import AddAssetModal, { AddAssetData } from '../components/ui/AddAssetModal';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { formatCurrency, formatPercent } from '../utils/formatters';
 
+
 const pageV = {
     initial: { opacity: 0, y: 12 },
     animate: { opacity: 1, y: 0, transition: { duration: 0.4 } },
@@ -169,6 +170,7 @@ export default function Portfolio() {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortField, setSortField] = useState<SortField>('value');
     const [sortDir, setSortDir] = useState<SortDir>('desc');
+    const [range, setRange] = useState<'1W' | '1M' | '3M' | '1Y' | 'ALL'>('1M');
 
     // ─── Derived data ────────────────────────────────────────────────
     const filteredHoldings = useMemo(() => {
@@ -208,12 +210,37 @@ export default function Portfolio() {
     }, [holdings]);
 
     // Snapshot chart data
-    const perfData = useMemo(() =>
-        snapshots.map(s => ({
+    const perfData = useMemo(() => {
+
+        const history = snapshots.map(s => ({
             date: new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             value: Math.round(s.totalValue),
-        }))
-        , [snapshots]);
+        }));
+        if (totalValue) {
+            history.push({
+                date: "Now",
+                value: Math.round(totalValue)
+            });
+        }
+        return history;
+    }, [snapshots, totalValue]);
+
+    const filteredPerfData = useMemo(() => {
+
+        if (range === "ALL") return perfData;
+
+        const daysMap = {
+            "1W": 7,
+            "1M": 30,
+            "3M": 90,
+            "1Y": 365
+        };
+
+        const days = daysMap[range];
+
+        return perfData.slice(-days);
+
+    }, [range, perfData]);
 
     // Current vs target allocation data
     const allocComparisonData = useMemo(() =>
@@ -546,8 +573,10 @@ export default function Portfolio() {
                 </div>
             )}
 
+            {/* Hidden for time being until work on it can be continued later */}
+
             {/* ─── Section 5: Current vs Target Allocation ────────────────── */}
-            {allocation.length > 0 && (
+            {allocation.length > 0 && false && (
                 <ScrollReveal>
                     <GlassCard>
                         <h2 className="text-h3 mb-4 flex items-center gap-2">
@@ -580,11 +609,26 @@ export default function Portfolio() {
                 <ScrollReveal>
                     <GlassCard>
                         <h2 className="text-h3 mb-4 flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-xs">
+                                {["1W","1M","3M","1Y","ALL"].map(r => (
+                                    <button
+                                        key={r}
+                                        onClick={() => setRange(r as any)}
+                                        className="px-2 py-1 rounded-md transition"
+                                        style={{
+                                            background: range === r ? "var(--color-accent-teal)" : "var(--color-bg-tertiary)",
+                                            color: range === r ? "var(--color-bg-primary)" : "var(--color-text-secondary)"
+                                        }}
+                                    >
+                                        {r}
+                                    </button>
+                                ))}
+                            </div>
                             <TrendingUp size={18} style={{ color: 'var(--color-accent-teal)' }} />
                             Portfolio Value Over Time
                         </h2>
                         {isLoading ? <SkeletonLoader height="h-56" /> : (
-                            <Diagrams data={perfData} type="area" dataKeys={['value']} xKey="date" height={280} />
+                            <Diagrams data={filteredPerfData} type="area" dataKeys={['value']} xKey="date" height={280} />
                         )}
                     </GlassCard>
                 </ScrollReveal>

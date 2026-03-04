@@ -1,47 +1,28 @@
-import { prisma } from '../../infrastructure/prisma/client';
-import { fetchHistoricalPrices } from './price-fetcher';
+import { prisma } from "../../infrastructure/prisma/client";
+import { fetchHistoricalPrices } from "./price-fetcher";
+import { logger } from "../../infrastructure/logger/logger";
 
-/**
- * Ingests historical daily prices for a given asset into the database.
- * @param assetId Database ID of the asset
- * @param ticker Asset ticker for Yahoo Finance
- */
 export async function ingestAssetPrices(assetId: number, ticker: string) {
-    console.log(`Starting ingestion for ${ticker} (ID: ${assetId})...`);
 
-    const prices = await fetchHistoricalPrices(ticker);
+  logger.info(`Starting price ingestion for ${ticker}`);
 
-    if (prices.length === 0) {
-        console.log(`No historical prices found for ${ticker}.`);
-        return;
-    }
+  const prices = await fetchHistoricalPrices(ticker);
 
-    let count = 0;
-    for (const record of prices) {
-        if (record.close === null || record.close === undefined) continue;
+  if (!prices.length) {
+    logger.warn(`No prices fetched for ${ticker}`);
+    return;
+  }
 
-        try {
-            await prisma.assetPrice.upsert({
-                where: {
-                    assetId_priceDate: {
-                        assetId: assetId,
-                        priceDate: record.date,
-                    },
-                },
-                update: {
-                    price: record.close,
-                },
-                create: {
-                    assetId: assetId,
-                    priceDate: record.date,
-                    price: record.close,
-                },
-            });
-            count++;
-        } catch (error) {
-            console.error(`Error storing price for ${ticker} on ${record.date.toISOString()}:`, error);
-        }
-    }
+  const data = prices.map((p) => ({
+    assetId,
+    priceDate: p.date,
+    price: p.close,
+  }));
 
-    console.log(`Successfully stored ${count} price records for ${ticker}.`);
+  await prisma.assetPrice.createMany({
+    data,
+    skipDuplicates: true,
+  });
+
+  logger.info(`Inserted ${data.length} price rows for ${ticker}`);
 }

@@ -1,4 +1,4 @@
-import apiClient from './api';
+import api from './api';
 import {
   GetEventsQuery,
   GetEventsResponse,
@@ -28,7 +28,7 @@ export const eventsService = {
       types.forEach((t) => params.append('eventType', t));
     }
 
-    const { data } = await apiClient.get<GetEventsResponse>(
+    const { data } = await api.get<GetEventsResponse>(
       `/events?${params}`
     );
 
@@ -36,14 +36,14 @@ export const eventsService = {
   },
 
   async getExposure(): Promise<ExposureReport> {
-    const { data } = await apiClient.get<{ exposure: ExposureReport }>(
+    const { data } = await api.get<{ exposure: ExposureReport }>(
       '/events/exposure'
     );
     return data.exposure;
   },
 
   async simulateShock(eventId: number): Promise<ShockSimulationResult> {
-    const { data } = await apiClient.post<ShockSimulationResult>(
+    const { data } = await api.post<ShockSimulationResult>(
       '/events/simulate',
       { eventId }
     );

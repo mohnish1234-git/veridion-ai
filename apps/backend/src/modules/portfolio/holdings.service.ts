@@ -3,6 +3,8 @@ import { prisma } from "../../infrastructure/prisma/client";
 import { NotFoundError, BadRequestError } from "../../core/errors";
 import { cacheDel } from "../../infrastructure/cache/redis";
 import { logger } from "../../infrastructure/logger/logger";
+import { ensureAssetExists } from "../market-data/asset-discovery.service";
+import { ingestAssetPrices } from "../market-data/price-ingestion.service";
 
 // ── Types ────────────────────────────────────────────
 
@@ -58,24 +60,9 @@ export async function addHolding(userId: number, input: CreateHoldingInput) {
   const ticker = input.ticker.toUpperCase().trim();
 
   // Upsert the asset — always update name/sector/type/country if provided,
-  // so manually added metadata is persisted correctly
-  const asset = await prisma.asset.upsert({
-    where: { ticker },
-    create: {
-      ticker,
-      name: input.name || null,
-      assetType: input.assetType || null,
-      sector: input.sector || null,
-      country: input.country || null,
-    },
-    update: {
-      // Only update fields if new values are provided (don't wipe existing data)
-      ...(input.name ? { name: input.name } : {}),
-      ...(input.assetType ? { assetType: input.assetType } : {}),
-      ...(input.sector ? { sector: input.sector } : {}),
-      ...(input.country ? { country: input.country } : {}),
-    },
-  });
+  const asset = await ensureAssetExists(ticker);
+  // ensure prices exist
+  await ingestAssetPrices(asset.id, asset.ticker);
 
   logger.info(`Upserted asset: ${asset.ticker}`);
 
