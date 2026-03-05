@@ -6,6 +6,7 @@ import { initJobQueue } from "./infrastructure/queue/job-queue";
 import { logger } from "./infrastructure/logger/logger";
 import { startPriceScheduler } from "./modules/jobs/price-scheduler";
 import { startNewsScheduler } from "./modules/jobs/news-scheduler";
+import { startRiskScheduler } from "./modules/risk/risk.cron";
 
 async function bootstrap() {
   // 1. Connect infrastructure
@@ -19,6 +20,7 @@ async function bootstrap() {
     logger.info(`   Environment: ${env.NODE_ENV}`);
     startPriceScheduler();
     startNewsScheduler();
+    startRiskScheduler();
   });
 
   // 3. Graceful shutdown

@@ -35,18 +35,9 @@ riskController.get('/frontier', asyncHandler(async (req: Request, res: Response)
     return sendSuccess(res, frontier);
 }));
 
-// GET /risk/covariance — returns a simple covariance matrix for the user's holdings
+// GET /risk/covariance — returns the real covariance matrix for the user's holdings
 riskController.get('/covariance', asyncHandler(async (req: Request, res: Response) => {
     const userId = (req as AuthRequest).user.userId;
-    // Return a placeholder covariance structure based on holdings
-    const holdings = await (await import('../../infrastructure/prisma/client')).prisma.holding.findMany({
-        where: { userId },
-        include: { asset: true },
-    });
-    const tickers = holdings.map(h => h.asset.ticker);
-    // Build a simple identity-like covariance matrix
-    const matrix: number[][] = tickers.map((_, i) =>
-        tickers.map((_, j) => i === j ? 0.04 : 0.01)
-    );
-    return sendSuccess(res, { tickers, matrix });
+    const covariance = await riskService.getCovariance(userId);
+    return sendSuccess(res, covariance);
 }));

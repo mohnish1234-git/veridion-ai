@@ -7,9 +7,8 @@ export function useRiskMetrics() {
     const userId = useAuthStore((s) => s.user?.id);
 
     useEffect(() => {
-        if (!userId) return;
         store.fetchAll();
-    }, [userId]);
+    }, [userId]); // refetch if user changes
 
     return store;
 }

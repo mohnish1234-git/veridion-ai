@@ -1,4 +1,9 @@
 import { prisma } from '../../infrastructure/prisma/client';
+import {
+    getRiskContributionsForUser,
+    getCovarianceForUser,
+    getEfficientFrontierForUser,
+} from './risk.engine';
 
 function d(val: any): number {
     if (val == null) return 0;
@@ -27,7 +32,7 @@ export const riskService = {
             sortinoRatio: d(metrics.sortinoRatio),
             maxDrawdown: d(metrics.maxDrawdown),
             var95: d(metrics.var95),
-            cvar95: d(metrics.var95), // schema has no cvar95, fallback to var95
+            cvar95: d(metrics.var95), // schema has no cvar95 column, fallback to var95
             beta: 1,                  // not in schema
             trackingError: 0,         // not in schema
             date: metrics.calculatedAt.toISOString(),
@@ -54,51 +59,26 @@ export const riskService = {
         }));
     },
 
+    /**
+     * Real risk contributions computed from historical asset returns
+     * and the covariance matrix. Each asset's contribution sums to ~1.
+     */
     async getRiskContributions(userId: number) {
-        const holdings = await prisma.holding.findMany({
-            where: { userId },
-            include: {
-                asset: {
-                    include: {
-                        prices: { orderBy: { priceDate: 'desc' }, take: 1 },
-                    },
-                },
-            },
-        });
-
-        if (holdings.length === 0) return [];
-
-        const values = holdings.map(h => ({
-            ticker: h.asset.ticker,
-            name: h.asset.name ?? h.asset.ticker,
-            value: h.quantity.toNumber() * (h.asset.prices[0]?.price?.toNumber() ?? 0),
-        }));
-
-        const total = values.reduce((s, v) => s + v.value, 0);
-
-        return values.map(v => ({
-            ticker: v.ticker,
-            name: v.name,
-            weight: total > 0 ? v.value / total : 0,
-            contribution: total > 0 ? (v.value / total) * 0.15 : 0,
-        }));
+        return getRiskContributionsForUser(userId);
     },
 
+    /**
+     * Real efficient frontier via Markowitz mean-variance optimisation.
+     * Returns ~20 portfolios with increasing expected return targets.
+     */
     async getEfficientFrontier(userId: number) {
-        const holdings = await prisma.holding.findMany({ where: { userId } });
-        if (holdings.length === 0) return [];
+        return getEfficientFrontierForUser(userId);
+    },
 
-        const points = [];
-        for (let i = 0; i <= 10; i++) {
-            const vol = 0.05 + i * 0.025;
-            const ret = 0.03 + i * 0.015 - (i > 7 ? (i - 7) * 0.01 : 0);
-            points.push({
-                volatility: Number(vol.toFixed(4)),
-                expectedReturn: Number(ret.toFixed(4)),
-                isOptimal: i === 6,
-                isCurrent: i === 5,
-            });
-        }
-        return points;
+    /**
+     * Real covariance matrix computed from historical asset returns.
+     */
+    async getCovariance(userId: number) {
+        return getCovarianceForUser(userId);
     },
 };
