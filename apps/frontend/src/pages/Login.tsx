@@ -43,6 +43,7 @@ export default function Login() {
                         <Hexagon size={32} className="text-bg-primary" />
                     </div>
                     <GradientText text="Veridion AI" className="text-4xl font-bold mb-4" />
+                    <br />
                     <BlurText text="Intelligent investing. Adaptive risk. Transparent decisions." className="justify-center text-lg" />
                 </div>
             </div>

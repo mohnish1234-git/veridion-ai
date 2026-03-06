@@ -183,38 +183,6 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* Testimonials */}
-            <section className="py-24" style={{ background: 'var(--color-bg-secondary)' }}>
-                <div className="max-w-4xl mx-auto px-6">
-                    <ScrollReveal>
-                        <div className="text-center mb-16">
-                            <h2 className="text-h2 mb-4" style={{ fontSize: '2rem' }}>Trusted by Investors</h2>
-                        </div>
-                    </ScrollReveal>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {[
-                            { name: 'Sarah K.', role: 'Early Adopter', text: 'The behavioral insights alone saved me from panic-selling during the recent correction. My portfolio recovered in weeks.' },
-                            { name: 'Michael R.', role: 'Tech Executive', text: 'Finally, a platform that explains WHY it makes decisions. The transparency is unlike anything else in fintech.' },
-                        ].map((t, i) => (
-                            <ScrollReveal key={i} delay={i * 0.1}>
-                                <div className="glass p-6">
-                                    <div className="flex items-center gap-1 mb-3">
-                                        {Array.from({ length: 5 }).map((_, j) => (
-                                            <Star key={j} size={14} fill="#F5A623" color="#F5A623" />
-                                        ))}
-                                    </div>
-                                    <p className="text-body mb-4" style={{ color: 'var(--color-text-secondary)' }}>"{t.text}"</p>
-                                    <div>
-                                        <p className="text-sm font-semibold">{t.name}</p>
-                                        <p className="text-caption" style={{ color: 'var(--color-text-muted)' }}>{t.role}</p>
-                                    </div>
-                                </div>
-                            </ScrollReveal>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
             {/* Final CTA */}
             <section className="py-32 relative overflow-hidden">
                 <Aurora colors={['#00D4AA', '#3B82F6']} />

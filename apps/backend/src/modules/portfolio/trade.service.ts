@@ -72,6 +72,7 @@ export async function executeBuy(userId: number, input: {
 
     }
 
+    const total = input.quantity * input.price;
     // Record trade
     await tx.trade.create({
       data: {
@@ -79,7 +80,8 @@ export async function executeBuy(userId: number, input: {
         assetId: asset.id,
         side: "BUY",
         quantity: new Decimal(input.quantity),
-        price: new Decimal(input.price)
+        price: new Decimal(input.price),
+        total: new Decimal(total)
       }
     });
 
@@ -144,6 +146,7 @@ export async function executeSell(userId: number, input: {
       }
     });
 
+    const total = input.quantity * input.price;
     // Record trade
     await tx.trade.create({
       data: {
@@ -151,7 +154,8 @@ export async function executeSell(userId: number, input: {
         assetId: holding.assetId,
         side: "SELL",
         quantity: new Decimal(input.quantity),
-        price: new Decimal(input.price)
+        price: new Decimal(input.price),
+        total: new Decimal(total)
       }
     });
 
