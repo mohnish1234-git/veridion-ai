@@ -26,7 +26,7 @@ export default function SimulationLab() {
     const triggerSimulation = useCallback(() => {
         if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
-            runSimulation({ volatilityMultiplier: volMult, crashDepth, inflationRate: inflation, interestRateShock: rateShock });
+            runSimulation({ volatilityMultiplier: volMult, crashDepth, inflationRate: inflation, interestRateShock: rateShock, holdings });
         }, 500);
     }, [volMult, crashDepth, inflation, rateShock, runSimulation]);
 
@@ -37,9 +37,12 @@ export default function SimulationLab() {
     }, [triggerSimulation]);
 
     // ── Derived display values ────────────────────────
-    const portfolioValue = results?.initialValue ?? totalValue ?? 0;
-    const holdingsCount = results?.holdingsCount ?? holdings.length;
-    const largestHolding = results?.largestHolding;
+    const portfolioValue = totalValue ?? 0;
+    const holdingsCount = holdings.length;
+    const largestHolding = holdings.reduce(
+        (max, h) => (!max || (h.value ?? 0) > (max.value ?? 0) ? h : max),
+        null
+    );
 
     return (
         <motion.div variants={pageV} initial="initial" animate="animate" exit="exit">

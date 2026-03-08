@@ -9,6 +9,7 @@ export interface StressTestParams {
     inflationRate: number;
     interestRateShock: number;
     numPaths?: number;
+    holdings: any[];
 }
 
 export const montecarloService = {
